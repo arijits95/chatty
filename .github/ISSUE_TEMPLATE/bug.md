@@ -1,7 +1,7 @@
 ---
 name: Bug
 about: Report a defect or regression
-title: "[Bug] "
+title: "Area: Problem summary"
 labels: bug
 assignees: ""
 ---

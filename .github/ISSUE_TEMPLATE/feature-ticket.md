@@ -1,7 +1,7 @@
 ---
 name: Feature Ticket
 about: Track an implementation slice
-title: "[Ticket] "
+title: "Area: Implementation outcome"
 labels: feature
 assignees: ""
 ---

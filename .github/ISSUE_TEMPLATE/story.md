@@ -1,7 +1,7 @@
 ---
 name: Story
 about: Track a user-facing capability
-title: "[Story] "
+title: "Area: User outcome"
 labels: story
 assignees: ""
 ---
