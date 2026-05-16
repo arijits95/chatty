@@ -16,6 +16,11 @@ xcuserdata/
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .swiftpm/xcode/xcuserdata/
 
+# Firebase local configuration
+#
+GoogleService-Info.plist
+GoogleService-Info-*.plist
+
 # CocoaPods (uncomment if you use Pods and don't want to check them in)
 # Pods/
 

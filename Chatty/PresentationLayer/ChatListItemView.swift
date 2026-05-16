@@ -9,50 +9,52 @@ import SwiftUI
 
 struct ChatListItemView: View {
     
-    @State var chat: ChatListItemData
+    let chat: ChatListItemData
     
     var body: some View {
         HStack(alignment: .center) {
-            Image(systemName: "star")
+            Image(systemName: "person.fill")
                 .resizable()
+                .scaledToFit()
                 .padding()
                 .frame(width: 60, height: 60)
+                .foregroundStyle(.secondary)
                 .background {
                     Circle()
-                        .fill(Color.gray.opacity(0.5))
+                        .fill(Color.secondary.opacity(0.18))
                 }
             HStack(alignment: .top) {
                 VStack(alignment: .leading) {
                     Text(chat.name)
                         .lineLimit(1)
                         .bold()
-                        .foregroundStyle(Color.black)
+                        .foregroundStyle(.primary)
                     Text(chat.lastMessage)
-                        .lineLimit(3)
+                        .lineLimit(2)
                         .font(.subheadline)
-                        .foregroundStyle(Color.black.opacity(0.8))
+                        .foregroundStyle(.secondary)
                 }
                 Spacer()
                 VStack(alignment: .trailing) {
                     Text(chat.lastMessageDateTime)
+                        .font(.caption)
                         .bold()
-                        .foregroundStyle(chat.unreadMessageCount > 0 ? Color.green : Color.black)
+                        .foregroundStyle(chat.unreadMessageCount > 0 ? .green : .secondary)
                     if chat.unreadMessageCount > 0 {
                         Text("\(chat.unreadMessageCount)")
-                            .font(.headline)
+                            .font(.caption.bold())
                             .foregroundStyle(Color.white)
                             .padding(.horizontal, 5)
+                            .padding(.vertical, 2)
                             .background {
-                                GeometryReader { proxy in
-                                    RoundedRectangle(cornerRadius: proxy.size.width)
-                                        .fill(.green)
-                                }
+                                Capsule()
+                                    .fill(.green)
                             }
                     }
                 }
             }
         }
-        .border(.blue)
+        .padding(.vertical, 4)
     }
 }
 

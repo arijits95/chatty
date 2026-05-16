@@ -16,7 +16,7 @@ class ChatsUseCaseImpl: FetchChatUseCase, ObserverChatUpdateUseCase {
     }
     
     func fetchChats() async throws -> [ChatEntity] {
-        try await repository.fetchChats(before: Date.now.timeIntervalSinceNow)
+        try await repository.fetchChats(before: Date.now.timeIntervalSince1970)
     }
     
     func fetchChats(before: TimeInterval) async throws -> [ChatEntity] {
@@ -24,7 +24,7 @@ class ChatsUseCaseImpl: FetchChatUseCase, ObserverChatUpdateUseCase {
     }
     
     func fetchChats(after: TimeInterval) async throws -> [ChatEntity] {
-        try await repository.fetchChats(before: after)
+        try await repository.fetchChats(after: after)
     }
     
     func observe() -> AsyncStream<ChatUpdateEntity> {

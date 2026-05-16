@@ -22,25 +22,28 @@ extension ChatListItemData {
         self.id = chatEntity.id
         self.name = chatEntity.participants.first?.name ?? ""
         self.lastMessage = chatEntity.lastMessage
-        
-        let dateFormatter = DateFormatter()
-        let date = Date(timeIntervalSince1970: chatEntity.lastMessageTimestamp)
-        if Calendar.current.isDateInToday(date) {
-            dateFormatter.dateFormat = "hh:mm a"
-            self.lastMessageDateTime = dateFormatter.string(from: date)
-        } else if Calendar.current.isDateInYesterday(date) {
-            self.lastMessageDateTime = "Yesterday"
-        } else {
-            dateFormatter.dateFormat = "dd/mm/yy"
-            self.lastMessageDateTime = dateFormatter.string(from: date)
-        }
-        
+        self.lastMessageDateTime = ChatListItemData.formattedTimestamp(chatEntity.lastMessageTimestamp)
         self.unreadMessageCount = chatEntity.isRead ? 0 : 1
+    }
+
+    static func formattedTimestamp(_ timestamp: TimeInterval, calendar: Calendar = .current) -> String {
+        let date = Date(timeIntervalSince1970: timestamp)
+
+        if calendar.isDateInToday(date) {
+            return date.formatted(date: .omitted, time: .shortened)
+        }
+
+        if calendar.isDateInYesterday(date) {
+            return "Yesterday"
+        }
+
+        return date.formatted(.dateTime.day().month().year(.twoDigits))
     }
 }
 
 protocol ChatListViewModel: ObservableObject {
     var chats: AnyPublisher<[ChatListItemData], Never> { get }
+    var state: AnyPublisher<ChatListState, Never> { get }
     
     func fetchChats() async
     func didPullToRefresh() async
@@ -48,76 +51,89 @@ protocol ChatListViewModel: ObservableObject {
     func didTapOnChatItem(withId id: String)
 }
 
+enum ChatListState: Equatable {
+    case idle
+    case loading
+    case loaded
+    case empty
+    case failed(String)
+}
+
 class ChatListViewModelImpl: ChatListViewModel {
     
     var chats: AnyPublisher<[ChatListItemData], Never>
+    var state: AnyPublisher<ChatListState, Never>
     
     private var chatListSubject = CurrentValueSubject<[ChatEntity], Never>([])
+    private let stateSubject = CurrentValueSubject<ChatListState, Never>(.idle)
     private let usecase: any FetchChatUseCase & ObserverChatUpdateUseCase
     private var cancellables: Set<AnyCancellable> = []
-    private var stream: Task<Void, Never>?
     
     init(usecase: any FetchChatUseCase & ObserverChatUpdateUseCase) {
         self.usecase = usecase
         chats = chatListSubject
             .map { entities in
-                entities.map {
+                entities.sortedByRecentMessage().map {
                     ChatListItemData.init(chatEntity: $0)
                 }
             }
             .eraseToAnyPublisher()
-        Task.detached {
+        state = stateSubject.eraseToAnyPublisher()
+
+        Task {
             await self.observeChatUpdate()
         }
     }
-    
-//    deinit {
-//        stream?.cancel()
-//    }
-    
+
     private func observeChatUpdate() async {
         for await update in usecase.observe() {
             switch update {
             case .newChat(let chatEntity):
-                if let index = chatListSubject.value.firstIndex(where: {
-                        chatEntity.lastMessageTimestamp >= $0.lastMessageTimestamp
-                }) {
-                    chatListSubject.value.insert(chatEntity, at: index)
-                }
-                else {
-                    chatListSubject.value.insert(chatEntity, at: 0)
-                }
+                upsertChat(chatEntity)
             case .newMessage(let messageEntity):
-                guard let index = chatListSubject.value.firstIndex(where: {
-                        messageEntity.chatId >= $0.id
-                    })
-                else {
+                guard let index = chatListSubject.value.firstIndex(where: { $0.id == messageEntity.chatId }) else {
                     continue
                 }
                 chatListSubject.value[index].lastMessage = messageEntity.content
                 chatListSubject.value[index].lastMessageTimestamp = messageEntity.createdAt
+                chatListSubject.value[index].isRead = false
+                chatListSubject.send(chatListSubject.value.sortedByRecentMessage())
             default: break
             }
         }
     }
+
+    private func upsertChat(_ chat: ChatEntity) {
+        var chats = chatListSubject.value
+        if let index = chats.firstIndex(where: { $0.id == chat.id }) {
+            chats[index] = chat
+        } else {
+            chats.append(chat)
+        }
+        chatListSubject.send(chats.sortedByRecentMessage())
+        stateSubject.send(chats.isEmpty ? .empty : .loaded)
+    }
     
     func fetchChats() async {
+        stateSubject.send(.loading)
         do {
-            let chats = try await usecase.fetchChats()
+            let chats = try await usecase.fetchChats().sortedByRecentMessage()
             chatListSubject.send(chats)
+            stateSubject.send(chats.isEmpty ? .empty : .loaded)
         } catch {
-            
+            stateSubject.send(.failed("Unable to load chats. Pull to refresh and try again."))
         }
     }
     
     func didPullToRefresh() async  {
         do {
-            let chats = try await usecase.fetchChats()
+            let chats = try await usecase.fetchChats().sortedByRecentMessage()
             if !chats.isEmpty {
                 chatListSubject.send(chats)
+                stateSubject.send(.loaded)
             }
         } catch {
-            
+            stateSubject.send(.failed("Refresh failed. Please try again."))
         }
     }
     
@@ -126,11 +142,9 @@ class ChatListViewModelImpl: ChatListViewModel {
             if let timestampOfLastChat = chatListSubject.value.last?.lastMessageTimestamp {
                 let chats = try await usecase.fetchChats(before: timestampOfLastChat)
                 if !chats.isEmpty {
-                    let updatedChatList = chatListSubject.value + chats
+                    let updatedChatList = (chatListSubject.value + chats).sortedByRecentMessage()
                     chatListSubject.send(updatedChatList)
                 }
-            } else {
-                
             }
         }
     }

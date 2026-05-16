@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct ChattyApp: App {
+    @State private var dependencies = AppDependencies()
+
     var body: some Scene {
         WindowGroup {
-            ChatListView()
+            ChatListView(viewModel: dependencies.makeChatListViewModel())
         }
     }
 }
