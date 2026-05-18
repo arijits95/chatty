@@ -9,6 +9,8 @@ import SwiftUI
 
 @main
 struct ChattyApp: App {
+    
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @State private var dependencies = AppDependencies()
 
     var body: some Scene {

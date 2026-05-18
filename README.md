@@ -75,6 +75,19 @@ See:
 - [Project Board](docs/PROJECT_BOARD.md)
 - [Branch Protection](docs/BRANCH_PROTECTION.md)
 
+## Firebase Setup
+
+Chatty uses Firebase for production authentication and later real-time messaging/storage.
+
+1. Create a Firebase project.
+2. Add an iOS app using this bundle id: `com.epam.Chatty`.
+3. Download `GoogleService-Info.plist`.
+4. Place it at:
+
+   `Chatty/GoogleService-Info.plist`
+
+5. Do not commit this file. It is ignored by `.gitignore`.
+
 ## Current Status
 
 M0 Foundation is in progress:
