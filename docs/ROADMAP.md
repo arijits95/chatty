@@ -12,7 +12,7 @@ Chatty is a native SwiftUI portfolio chat app. The v1 release uses Firebase firs
 
 ## M1 Auth + Profile
 - Firebase SDK and app configuration.
-- Phone OTP sign-in flow.
+- Phone OTP sign-in flow using Firebase test phone numbers, reCAPTCHA fallback, and demo auth for Firebase-free previews/screenshots.
 - Session persistence and auth routing.
 - Profile setup, avatar upload, remote profile storage, and local cache.
 
@@ -26,7 +26,7 @@ Chatty is a native SwiftUI portfolio chat app. The v1 release uses Firebase firs
 - Image, video, and file messages with upload progress, previews, cache metadata, and share/open actions.
 
 ## M4 Notifications + Polish
-- FCM registration, token storage, payload contract, message notification trigger, and deep linking.
+- FCM registration, token storage, payload contract, message notification trigger, and deep linking where APNs credentials are available.
 - Typing indicators, presence, pinned/muted/archived states, settings, dark mode, accessibility, launch screen, and app icon.
 - CI hardening with stable destinations and optional UI smoke tests.
 
@@ -39,6 +39,7 @@ Chatty is a native SwiftUI portfolio chat app. The v1 release uses Firebase firs
 ## Post-v1
 - Status/stories.
 - Audio/video calls.
+- Production APNs setup for Firebase phone auth silent verification and message push notifications.
 - True end-to-end encryption.
 - Communities/channels.
 - Multi-device sync.
