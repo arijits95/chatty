@@ -36,9 +36,9 @@ struct AppConfiguration {
         let backendKind: BackendKind
 
         switch environment {
-        case .development, .demo:
+        case .demo:
             backendKind = .demo
-        case .production:
+        case .development, .production:
             backendKind = .firebase
         }
 

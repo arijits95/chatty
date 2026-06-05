@@ -17,7 +17,13 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     }
     
     private func initializeThirdPartyDependencies() {
+        guard Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil else {
+            if AppConfiguration.current.backendKind == .firebase {
+                assertionFailure("Missing GoogleService-Info.plist for Firebase-backed environment.")
+            }
+            return
+        }
+
         FirebaseApp.configure()
     }
 }
-

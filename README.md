@@ -88,6 +88,18 @@ Chatty uses Firebase for production authentication and later real-time messaging
 
 5. Do not commit this file. It is ignored by `.gitignore`.
 
+Development and production environments use Firebase and require this plist. The demo environment can run without this plist; when the file is absent, Firebase initialization is skipped and the app continues to use demo-backed dependencies.
+
+### Phone Auth Without APNs
+
+Firebase Phone Auth on iOS can use silent APNs notifications to verify that the sign-in request came from your app. A paid Apple Developer account is required for production APNs setup, so local portfolio development should use these alternatives:
+
+- Configure Firebase Authentication test phone numbers with fixed OTP codes, such as `123456`.
+- Use Firebase's reCAPTCHA fallback for environments where silent APNs verification is unavailable.
+- Keep auth behind app-owned repository/use-case protocols so a `DemoAuthRepository` can support local previews, tests, and screenshots without Firebase or APNs.
+
+Production message push notifications and silent APNs verification should be treated as a later capability that is blocked until an Apple Developer account is available.
+
 ## Current Status
 
 M0 Foundation is in progress:
